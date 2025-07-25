@@ -157,12 +157,10 @@ func (r *MySQLItemRepository) GetSummary(ctx context.Context) (map[string]int, e
 
 	summary := make(map[string]int)
 	
-	// 全カテゴリーを0で初期化
 	for _, category := range entity.GetValidCategories() {
 		summary[category] = 0
 	}
 
-	// 実際のデータで上書き
 	for rows.Next() {
 		var category string
 		var count int

@@ -43,13 +43,11 @@ func (u *ItemUsecase) GetItemByID(ctx context.Context, id int64) (*entity.Item, 
 
 // CreateItem は新しいアイテムを作成します
 func (u *ItemUsecase) CreateItem(ctx context.Context, name, category, brand string, purchasePrice int, purchaseDate string) (*entity.Item, error) {
-	// ドメインエンティティでバリデーション
 	item, err := entity.NewItem(name, category, brand, purchasePrice, purchaseDate)
 	if err != nil {
 		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 
-	// データベースに保存
 	createdItem, err := u.itemRepo.Create(ctx, item)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create item: %w", err)
@@ -64,18 +62,15 @@ func (u *ItemUsecase) UpdateItem(ctx context.Context, id int64, name, category, 
 		return nil, errors.ErrInvalidInput
 	}
 
-	// 既存のアイテムを取得
 	existingItem, err := u.itemRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get existing item: %w", err)
 	}
 
-	// アイテムを更新（バリデーション含む）
 	if err := existingItem.Update(name, category, brand, purchasePrice, purchaseDate); err != nil {
 		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 
-	// データベースに保存
 	if err := u.itemRepo.Update(ctx, existingItem); err != nil {
 		return nil, fmt.Errorf("failed to update item: %w", err)
 	}
@@ -89,13 +84,11 @@ func (u *ItemUsecase) PatchItem(ctx context.Context, id int64, updates map[strin
 		return nil, errors.ErrInvalidInput
 	}
 
-	// 既存のアイテムを取得
 	existingItem, err := u.itemRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get existing item: %w", err)
 	}
 
-	// 更新可能なフィールドのみ処理
 	allowedFields := map[string]bool{
 		"name":           true,
 		"brand":          true,
@@ -114,7 +107,6 @@ func (u *ItemUsecase) PatchItem(ctx context.Context, id int64, updates map[strin
 		return nil, fmt.Errorf("no valid fields provided for update")
 	}
 
-	// フィールドを選択的に更新
 	newName := existingItem.Name
 	newBrand := existingItem.Brand
 	newPurchasePrice := existingItem.PurchasePrice
@@ -145,7 +137,6 @@ func (u *ItemUsecase) PatchItem(ctx context.Context, id int64, updates map[strin
 		}
 	}
 
-	// バリデーション付きで更新（変更されていないフィールドは既存の値を使用）
 	if err := existingItem.Update(newName, existingItem.Category, newBrand, newPurchasePrice, existingItem.PurchaseDate); err != nil {
 		return nil, fmt.Errorf("validation failed: %w", err)
 	}
